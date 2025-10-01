@@ -14,7 +14,8 @@ import { addLiquidity } from "./handlers/addLiquidity.js";
 import { swap } from "./handlers/swap.js";
 import { removeLiquidity } from "./handlers/removeLiquidity.js";
 import { handleEject } from "./handlers/handleEject.js";
-import { subscribe } from "./handlers/subscribe.js"; 
+import { subscribe } from "./handlers/subscribe.js";
+import { sendBinChart } from "./handlers/sendBinChart.js"; 
 
 const app = express();
 
@@ -179,6 +180,20 @@ app.post('/webhook', async (req, res) => {
         const reply = await subscribe(userId, intent.pair);
 
         await axios.post(BOT_URL, { chat_id: chatId, text: reply });
+
+        return res.sendStatus(200);
+
+    } else if(intent.command === 'chart_liquidity') {
+
+        if(intent.pair === '') {
+
+            await axios.post(BOT_URL, { chat_id: chatId, text: 'Please specify the pool whose chart you want to view.' });
+
+            return res.sendStatus(200);
+
+        }
+
+        await sendBinChart(userId, chatId, intent.pair);
 
         return res.sendStatus(200);
 
