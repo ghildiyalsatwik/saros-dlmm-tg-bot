@@ -11,6 +11,8 @@ export const addLiquidity = async (userId, pair, shape, base_amount, quote_amoun
 
     console.log(`User: ${userId} wants to open a position.`);
 
+    console.log(`shape: ${shape}, min_bin: ${min_bin}, max_bin: ${max_bin}`);
+
     const { rows: userRows } = await pool.query('SELECT pubkey FROM users where telegram_user_id = $1;', [userId]);
 
     if(userRows.length === 0) {

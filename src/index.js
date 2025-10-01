@@ -177,7 +177,7 @@ app.post('/webhook', async (req, res) => {
 
     } else if(intent.command === 'subscribe') {
 
-        const reply = await subscribe(userId, intent.pair);
+        const reply = await subscribe(userId, intent.pair, chatId);
 
         await axios.post(BOT_URL, { chat_id: chatId, text: reply });
 

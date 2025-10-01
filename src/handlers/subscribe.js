@@ -2,7 +2,7 @@ import { pool } from "../utils/main_db.js";
 import { LiquidityBookServices, MODE } from "@saros-finance/dlmm-sdk";
 import { PublicKey } from "@solana/web3.js";
 
-export const subscribe = async (userId, pair) => {
+export const subscribe = async (userId, pair, chat_id) => {
 
     console.log(`User: ${userId} wants to subscribe to the pool: ${pair}`);
 
@@ -39,9 +39,9 @@ export const subscribe = async (userId, pair) => {
 
     await pool.query(
         
-        `INSERT INTO user_pool_subscriptions (user_id, pair, last_active_bin) VALUES ($1, $2, $3);`,
+        `INSERT INTO user_pool_subscriptions (user_id, pair, last_active_bin, chat_id) VALUES ($1, $2, $3, $4);`,
         
-        [userId, pair, activeBin]
+        [userId, pair, activeBin, chat_id]
     );
 
 

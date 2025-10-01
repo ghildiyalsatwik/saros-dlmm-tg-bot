@@ -28,11 +28,10 @@ export const checkBinsAndNotify = async () => {
 
         if(sub.last_active_bin !== currentBin) {
 
-            await bot.sendMessage(sub.userId, `Active bin changed for pool: ${pair}\nOld: ${sub.last_active_bin}\nNew: ${currentBin}`);
+            await bot.sendMessage(sub.chat_id, `Active bin changed for pool: ${pair}\nOld: ${sub.last_active_bin}\nNew: ${currentBin}`);
 
-            await pool.query("UPDATE user_pool_subscriptions SET last_active_bin = $1 WHERE user_id = $2 AND pair = $3", [currentBin, sub.userId, sub.pair]);
+            await pool.query("UPDATE user_pool_subscriptions SET last_active_bin = $1 WHERE user_id = $2 AND pair = $3 and chat_id = $4;", [currentBin, sub.user_id, sub.pair, sub.chat_id]);
         }
-
 
     }
 }
