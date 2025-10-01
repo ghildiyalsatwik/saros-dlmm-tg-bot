@@ -13,7 +13,8 @@ import { createPool } from "./handlers/createPool.js";
 import { addLiquidity } from "./handlers/addLiquidity.js";
 import { swap } from "./handlers/swap.js";
 import { removeLiquidity } from "./handlers/removeLiquidity.js";
-import { handleEject } from "./handlers/handleEject.js"; 
+import { handleEject } from "./handlers/handleEject.js";
+import { subscribe } from "./handlers/subscribe.js"; 
 
 const app = express();
 
@@ -168,6 +169,14 @@ app.post('/webhook', async (req, res) => {
     } else if(intent.command === 'eject') {
 
         const reply = await handleEject(userId);
+
+        await axios.post(BOT_URL, { chat_id: chatId, text: reply });
+
+        return res.sendStatus(200);
+
+    } else if(intent.command === 'subscribe') {
+
+        const reply = await subscribe(userId, intent.pair);
 
         await axios.post(BOT_URL, { chat_id: chatId, text: reply });
 

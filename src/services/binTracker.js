@@ -1,0 +1,39 @@
+import { LiquidityBookServices, MODE } from "@saros-finance/dlmm-sdk";
+import { connection } from "../utils/connection.js";
+import { pool } from "../utils/main_db.js";
+import bot from "../utils/bot.js";
+import { PublicKey } from "@solana/web3.js";
+const liquidityBookServices = new LiquidityBookServices({
+
+    mode: MODE.DEVNET,
+
+    options: {
+
+        rpcUrl: "https://api.devnet.solana.com",
+
+        commitmentOrConfig: "confirmed"
+    }
+
+});
+
+export const checkBinsAndNotify = async () => {
+
+    const { rows: subs } = await pool.query("SELECT * from user_pool_subscriptions");
+
+    for(const sub of subs) {
+
+        const pairInfo = liquidityBookServices.getPairAccount(new PublicKey(sub.pair));
+
+        const currentBin = pairInfo.activeId;
+
+        if(sub.last_active_bin !== currentBin) {
+
+            await bot.sendMessage(sub.userId, `Active bin changed for pool: ${pair}\nOld: ${sub.last_active_bin}\nNew: ${currentBin}`);
+
+            await pool.query("UPDATE user_pool_subscriptions SET last_active_bin = $1 WHERE user_id = $2 AND pair = $3", [currentBin, sub.userId, sub.pair]);
+        }
+
+
+    }
+}
+
