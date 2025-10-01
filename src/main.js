@@ -1,3 +1,3 @@
-import { checkBinsAndNotify } from "./services/binTracker";
+import { checkBinsAndNotify } from "./services/binTracker.js";
 
-setInterval(checkBinsAndNotify, 60 * 1000);
+setInterval(checkBinsAndNotify, 10 * 1000);

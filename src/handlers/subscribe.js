@@ -13,7 +13,7 @@ export const subscribe = async (userId, pair, chat_id) => {
         return "No such pool exists!";
     }
 
-    const { rows } = await pool.query("SELECT pair from user_pool_subscriptions WHERE user_id = $1 and pair = $2;", [userId, pair]);
+    const { rows } = await pool.query("SELECT pair from user_pool_subscriptions WHERE user_id = $1 and pair = $2 and chat_id = $3;", [userId, pair, chat_id]);
 
     if(rows.length !== 0) {
 
