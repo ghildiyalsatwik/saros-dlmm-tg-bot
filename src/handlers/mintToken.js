@@ -196,6 +196,6 @@ export const mintToken = async (userId, name, symbol, decimals, initial_amount) 
 
     await pool.query('INSERT INTO user_tokens (mint_address, name, symbol, decimals, user_id, mint_amount) VALUES ($1, $2, $3, $4, $5, $6)', [mintKeypair.publicKey.toBase58(), name, symbol, decimalsNum, userId, initial_amount_num]);
     
-    return `${symbol} has been created and ${initial_amount} of tokens have been minted to your wallet!\nTransaction Hash: ${sig}.`;
+    return `${symbol} has been created at ${mintKeypair.publicKey.toBase58()} and ${initial_amount} of tokens have been minted to your wallet!\nTransaction Hash: ${sig}.`;
 
 }

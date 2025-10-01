@@ -328,7 +328,7 @@ export const addLiquidity = async (userId, pair, shape, base_amount, quote_amoun
 
     const binRange = [minBin, maxBin];
 
-    const finalShape = shape === 'uniform' ? LiquidityShape.Spot : shape === 'curve' ? LiquidityShape.Curve : LiquidityShape.BidAsk;
+    const finalShape = (shape === 'uniform' || shape === 'spot') ? LiquidityShape.Spot : shape === 'curve' ? LiquidityShape.Curve : LiquidityShape.BidAsk;
 
     const liquidityDistribution = createUniformDistribution({
         

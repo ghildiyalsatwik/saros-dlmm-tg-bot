@@ -16,6 +16,7 @@ import { removeLiquidity } from "./handlers/removeLiquidity.js";
 import { handleEject } from "./handlers/handleEject.js";
 import { subscribe } from "./handlers/subscribe.js";
 import { sendBinChart } from "./handlers/sendBinChart.js"; 
+import { managePosition } from "./handlers/managePositions.js";
 
 const app = express();
 
@@ -196,6 +197,17 @@ app.post('/webhook', async (req, res) => {
         await sendBinChart(userId, chatId, intent.pair);
 
         return res.sendStatus(200);
+
+    } else if(intent.command === 'manage_positions') {
+
+        if(intent.position_pda === '') return 'Please specify the position you want to manage automatically!';
+
+        const reply = await managePosition(userId, chatId, intent.position_pda);
+
+        await axios.post(BOT_URL, { chat_id: chatId, text: reply });
+
+        return res.sendStatus(200);
+
 
     } else {
 
