@@ -77,6 +77,8 @@ export const manageUserPositionsService = async () => {
 
         const binShift = Math.abs(activeBin - Number(last_active_bin));
 
+        console.log("Bin shift: ", binShift, " slot diff: ", slotDiff);
+
         if(binShift > 0 && slotDiff >= 1) {
 
             console.log(`Position ${position_pda} moved from ${last_active_bin} to ${activeBin}, closing older position and opening a new one.`);

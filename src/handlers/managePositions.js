@@ -15,7 +15,7 @@ export const managePosition = async (userId, chatId, positionPDA) => {
     
     }
 
-    const { rows: positions } = await pool.query("SELECT * from user_positions_history WHERE position_pda = $1 AND position_pda NOT IN (SELECT position_pda from user_positions_history WHERE position_pda = $1 and active_bin NOT IN ('add'));", [positionPDA]);
+    const { rows: positions } = await pool.query("SELECT * from user_positions_history WHERE position_pda = $1 AND position_pda NOT IN (SELECT position_pda from user_positions_history WHERE position_pda = $1 and action_type NOT IN ('add'));", [positionPDA]);
 
     if(positions.length === 0) {
 
@@ -58,7 +58,7 @@ export const managePosition = async (userId, chatId, positionPDA) => {
 
     const liquidity_distribution = positions[0].liquidity_distribution;
 
-    const poolInfo = await liquidityBookServices.getPairAccount();
+    const poolInfo = await liquidityBookServices.getPairAccount(new PublicKey(pair));
 
     const activeBin = poolInfo.activeId;
 
@@ -68,7 +68,7 @@ export const managePosition = async (userId, chatId, positionPDA) => {
         
         `INSERT INTO manage_user_positions (user_id, chat_id, pair, position_nft, position_pda, last_active_bin, bin_array_lower, bin_array_upper, min_bin, max_bin, base_token, quote_token, base_amount, quote_amount, last_slot, liquidity_distribution) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16);`,
         
-        [userId, chatId, pair, position_nft, positionPDA, activeBin, bin_array_lower, bin_array_upper, min_bin, max_bin, base_token, quote_token, base_amount, quote_amount, currentSlot, liquidity_distribution]
+        [userId, chatId, pair, position_nft, positionPDA, activeBin, bin_array_lower, bin_array_upper, min_bin, max_bin, base_token, quote_token, base_amount, quote_amount, currentSlot, JSON.stringify(liquidity_distribution)]
     
     );
 
