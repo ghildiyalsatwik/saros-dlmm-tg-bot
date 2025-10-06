@@ -198,7 +198,7 @@ app.post('/webhook', async (req, res) => {
 
         return res.sendStatus(200);
 
-    } else if(intent.command === 'manage_positions') {
+    } else if(intent.command === 'manage_position') {
 
         if(intent.position_pda === '') return 'Please specify the position you want to manage automatically!';
 

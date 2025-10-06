@@ -188,6 +188,6 @@ export const createPool = async (userId, base_token, quote_token, bin_step, rate
     await pool.query('INSERT INTO user_pools (pair, base_token, quote_token, bin_step, rate_price, active_bin, bin_array_lower, bin_array_upper, user_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)', [pair, baseMint, quoteMint, binStep, ratePrice, activeBin, binArrayLower, binArrayUpper, userId]);
 
 
-    return `Pool between ${base_token} and ${quote_token} with binStep ${binStep} and ratePrice ${rate_price} has been created at ${pair}!\n Transaction Hash: ${sig}\n Please make reference to this pool to open positions and add liquidity.`;
+    return `Pool between ${base_token} and ${quote_token} with binStep ${binStep} and ratePrice ${rate_price} has been created at ${pair}!.\nCurrent active bin: ${activeBin}.\n\n Transaction Hash: ${sig}\n Please make reference to this pool to open positions and add liquidity.`;
 
 }
