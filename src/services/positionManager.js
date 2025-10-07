@@ -2,10 +2,11 @@ import { pool } from "../utils/main_db.js";
 import { LiquidityBookServices, MODE, LiquidityShape } from "@saros-finance/dlmm-sdk";
 import { connection } from "../utils/connection.js";
 import bot from "../utils/bot.js";
-import { PublicKey, Keypair } from "@solana/web3.js";
+import { PublicKey, Keypair, sendAndConfirmTransaction, Transaction } from "@solana/web3.js";
 import sss from "shamirs-secret-sharing";
 import { createAssociatedTokenAccountInstruction, getAssociatedTokenAddress, getAccount } from "@solana/spl-token";
 import BN from "bn.js";
+import axios from "axios";
 
 export const manageUserPositionsService = async () => {
 
@@ -225,7 +226,7 @@ export const manageUserPositionsService = async () => {
                 console.log("WSOL ATA does not exist.");
             }
 
-            if(quote_address === 'So11111111111111111111111111111111111111112' && WSOLFlag === false) {
+            if(quote_token === 'So11111111111111111111111111111111111111112' && WSOLFlag === false) {
 
                 console.log(WSOLFlag, "Creating tx to create the ATA");
 
