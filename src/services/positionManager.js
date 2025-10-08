@@ -84,6 +84,10 @@ export const manageUserPositionsService = async () => {
 
             console.log(`Position ${position_pda} moved from ${last_active_bin} to ${activeBin}, closing older position and opening a new one.`);
 
+            await pool.query("DELETE FROM manage_user_positions WHERE position_pda = $1", [position_pda]);
+
+            console.log(`Deleted ${position_pda} from management table.`);
+
             const closeResponse = await liquidityBookServices.removeMultipleLiquidity({
 
                 maxPositionList: [{
@@ -126,6 +130,8 @@ export const manageUserPositionsService = async () => {
             const secret = sss.combine(shares);
         
             const senderKeypair = Keypair.fromSecretKey(Uint8Array.from(secret));
+
+            console.log(senderKeypair.publicKey.toBase58(), payer.toBase58());
 
             if(closeResponse.txCreateAccount) {
 
@@ -189,8 +195,6 @@ export const manageUserPositionsService = async () => {
 
             await bot.sendMessage(Number(chat_id), `Position: ${position_pda} closed. Old active bin was ${last_active_bin}, new active bin is: ${activeBin}`);
 
-            await pool.query("DELETE FROM manage_user_positions WHERE position_pda = $1", [position_pda]);
-
             console.log(`Trying to open a new position around the new active bin: ${activeBin}`);
 
             const { rows: quoteRows } = await pool.query("SELECT decimals from tokens where mint_address = $1;", [quote_token]);
@@ -203,9 +207,13 @@ export const manageUserPositionsService = async () => {
 
             const binArrayIndex = Math.floor(activeBin/256);
 
-            const minBin = Number(min_bin);
+            const minBinIdx = Number(min_bin);
 
-            const maxBin = Number(max_bin);
+            const maxBinIdx = Number(max_bin);
+
+            const minBin = minBinIdx - Number(last_active_bin);
+
+            const maxBin = maxBinIdx - Number(last_active_bin);
 
             console.log(typeof minBin, minBin, typeof maxBin, maxBin);
 
@@ -255,13 +263,13 @@ export const manageUserPositionsService = async () => {
 
             const initTx = new Transaction();
 
-            await liquidityBookServices.getPairVaultInfo({ tokenAddress: poolInfo.tokenMintX, pair: pairPubkey, payer, transaction: initTx });
+            await liquidityBookServices.getPairVaultInfo({ tokenAddress: poolInfo.tokenMintX, pair: pairPubkey, payer: payer, transaction: initTx });
             
-            await liquidityBookServices.getPairVaultInfo({ tokenAddress: poolInfo.tokenMintY, pair: pairPubkey, payer, transaction: initTx });
+            await liquidityBookServices.getPairVaultInfo({ tokenAddress: poolInfo.tokenMintY, pair: pairPubkey, payer: payer, transaction: initTx });
             
-            await liquidityBookServices.getUserVaultInfo({ tokenAddress: poolInfo.tokenMintX, payer, transaction: initTx });
+            await liquidityBookServices.getUserVaultInfo({ tokenAddress: poolInfo.tokenMintX, payer: payer, transaction: initTx });
             
-            await liquidityBookServices.getUserVaultInfo({ tokenAddress: poolInfo.tokenMintY, payer, transaction: initTx });
+            await liquidityBookServices.getUserVaultInfo({ tokenAddress: poolInfo.tokenMintY, payer: payer, transaction: initTx });
 
 
             if(initTx.instructions.length) {
@@ -297,7 +305,7 @@ export const manageUserPositionsService = async () => {
         
                 await liquidityBookServices.createPosition({
                 
-                    payer,
+                    payer: payer,
                 
                     pair: pairPubkey,
                 
@@ -371,7 +379,7 @@ export const manageUserPositionsService = async () => {
                 
                 pair: pairPubkey,
                 
-                payer,
+                payer: payer,
                 
                 transaction: binArrayTx,
             
@@ -387,7 +395,7 @@ export const manageUserPositionsService = async () => {
                 
                     pair: pairPubkey,
                 
-                    payer,
+                    payer: payer,
                 
                     transaction: binArrayTx,
                 
@@ -449,7 +457,7 @@ export const manageUserPositionsService = async () => {
       
                 positionMint: positionNFT.publicKey,
               
-                payer,
+                payer: payer,
               
                 pair: pairPubkey,
               
@@ -470,16 +478,26 @@ export const manageUserPositionsService = async () => {
             addTx.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
             
             addTx.feePayer = payer;
+
+            let sig;
+
+            try {
             
-            const sig = await sendAndConfirmTransaction(connection, addTx, [senderKeypair]);
+                sig = await sendAndConfirmTransaction(connection, addTx, [senderKeypair]);
+
+            } catch(e) {
+
+                bot.sendMessage(Number(chat_id), `Transaction failed: ${e.message || e}`);
+
+                continue;
+
+            }
             
             console.log("Liquidity added! Tx:", sig);
         
             const posAcc = await liquidityBookServices.lbProgram.account.position.fetch(positionPDA);
             
             console.log("Position liquidity shares:", posAcc.liquidityShares);
-
-            console.log(`Deleted ${position_pda} from management table.`);
 
             bot.sendMessage(Number(chat_id), `Liquidity added successfully to new position!\nTx: ${sig}\nYour Position PDA: ${positionPDA.toBase58()}.\nYour position NFT: ${positionNFT.publicKey.toBase58()}\n Please refer to this position PDA to add or remove liquidity from this position`);
 
