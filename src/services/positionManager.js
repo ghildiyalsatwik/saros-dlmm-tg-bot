@@ -189,6 +189,8 @@ export const manageUserPositionsService = async () => {
 
             await bot.sendMessage(Number(chat_id), `Position: ${position_pda} closed. Old active bin was ${last_active_bin}, new active bin is: ${activeBin}`);
 
+            await pool.query("DELETE FROM manage_user_positions WHERE position_pda = $1", [position_pda]);
+
             console.log(`Trying to open a new position around the new active bin: ${activeBin}`);
 
             const { rows: quoteRows } = await pool.query("SELECT decimals from tokens where mint_address = $1;", [quote_token]);
@@ -476,8 +478,6 @@ export const manageUserPositionsService = async () => {
             const posAcc = await liquidityBookServices.lbProgram.account.position.fetch(positionPDA);
             
             console.log("Position liquidity shares:", posAcc.liquidityShares);
-
-            await pool.query("DELETE FROM manage_user_positions WHERE position_pda = $1", [position_pda]);
 
             console.log(`Deleted ${position_pda} from management table.`);
 
