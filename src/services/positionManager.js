@@ -253,13 +253,13 @@ export const manageUserPositionsService = async () => {
 
             const initTx = new Transaction();
 
-            await liquidityBookServices.getPairVaultInfo({ tokenAddress: pairInfo.tokenMintX, pair: pairPubkey, payer, transaction: initTx });
+            await liquidityBookServices.getPairVaultInfo({ tokenAddress: poolInfo.tokenMintX, pair: pairPubkey, payer, transaction: initTx });
             
-            await liquidityBookServices.getPairVaultInfo({ tokenAddress: pairInfo.tokenMintY, pair: pairPubkey, payer, transaction: initTx });
+            await liquidityBookServices.getPairVaultInfo({ tokenAddress: poolInfo.tokenMintY, pair: pairPubkey, payer, transaction: initTx });
             
-            await liquidityBookServices.getUserVaultInfo({ tokenAddress: pairInfo.tokenMintX, payer, transaction: initTx });
+            await liquidityBookServices.getUserVaultInfo({ tokenAddress: poolInfo.tokenMintX, payer, transaction: initTx });
             
-            await liquidityBookServices.getUserVaultInfo({ tokenAddress: pairInfo.tokenMintY, payer, transaction: initTx });
+            await liquidityBookServices.getUserVaultInfo({ tokenAddress: poolInfo.tokenMintY, payer, transaction: initTx });
 
 
             if(initTx.instructions.length) {
