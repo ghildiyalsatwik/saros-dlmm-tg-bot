@@ -174,23 +174,23 @@ export const manageUserPositionsService = async () => {
             }
         
         
-            if (closeResponse.txCloseAccount) {
+            // if (closeResponse.txCloseAccount) {
 
-                try {
+            //     try {
                 
-                    await sendAndConfirmTransaction(connection, closeResponse.txCloseAccount, [senderKeypair]);
+            //         await sendAndConfirmTransaction(connection, closeResponse.txCloseAccount, [senderKeypair]);
 
-                } catch(e) {
+            //     } catch(e) {
 
-                    bot.sendMessage(Number(chat_id), `Transaction failed: ${e.message || e}`);
+            //         bot.sendMessage(Number(chat_id), `Transaction failed: ${e.message || e}`);
 
-                    continue;
+            //         continue;
 
-                }
+            //     }
 
-                console.log("Third Txn successfull!");
+            //     console.log("Third Txn successfull!");
         
-            }
+            // }
 
             console.log(`Position: ${position_pda} closed.`);
 
@@ -228,7 +228,19 @@ export const manageUserPositionsService = async () => {
 
             //const wsolATA = await getAssociatedTokenAddress(new PublicKey(quote_token), payer);
 
-            const wsolATA = await getOrCreateAssociatedTokenAccount(connection, senderKeypair, new PublicKey(quote_token), payer);
+            let wsolATA;
+
+            try {
+                
+                wsolATA = await getOrCreateAssociatedTokenAccount(connection, senderKeypair, new PublicKey(quote_token), payer);
+
+            } catch(e) {
+
+                bot.sendMessage(Number(chat_id), "Fetching or creating your WSOL ATA failed!");
+                
+                continue;
+
+            }
 
             console.log(wsolATA.address.toBase58());
 
