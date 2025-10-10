@@ -1,12 +1,13 @@
 import { pool } from "../utils/main_db.js";
-import { LiquidityBookServices, MODE, LiquidityShape } from "@saros-finance/dlmm-sdk";
+import { LiquidityBookServices, MODE, LiquidityShape, createUniformDistribution } from "@saros-finance/dlmm-sdk";
 import { connection } from "../utils/connection.js";
 import bot from "../utils/bot.js";
 import { PublicKey, Keypair, sendAndConfirmTransaction, Transaction } from "@solana/web3.js";
 import sss from "shamirs-secret-sharing";
-import { createAssociatedTokenAccountInstruction, getAssociatedTokenAddress, getAccount } from "@solana/spl-token";
+import { createAssociatedTokenAccountInstruction, getAssociatedTokenAddress, getAccount, getOrCreateAssociatedTokenAccount } from "@solana/spl-token";
 import BN from "bn.js";
 import axios from "axios";
+import { error } from "console";
 
 export const manageUserPositionsService = async () => {
 
@@ -215,51 +216,71 @@ export const manageUserPositionsService = async () => {
 
             const maxBin = maxBinIdx - Number(last_active_bin);
 
+            console.log("minBin: ", minBin, " maxBin: ", maxBin);
+
             console.log(typeof minBin, minBin, typeof maxBin, maxBin);
 
-            let WSOLFlag = false;
+            // let WSOLFlag = false;
 
-            let wsolAccount;
+            // let wsolAccount;
 
-            const wsolATA = await getAssociatedTokenAddress(new PublicKey(quote_token), payer);
+            console.log(quote_token);
 
-            console.log(wsolATA.toBase58());
+            //const wsolATA = await getAssociatedTokenAddress(new PublicKey(quote_token), payer);
 
-            try {
+            const wsolATA = await getOrCreateAssociatedTokenAccount(connection, senderKeypair, new PublicKey(quote_token), payer);
 
-                wsolAccount = await getAccount(connection, wsolATA);
+            console.log(wsolATA.address.toBase58());
 
-                WSOLFlag = true;
-            
-            } catch(err) {
+            console.log("getOrCreateAssociatedTokenAccount function call successful!");
 
-                console.log("WSOL ATA does not exist.");
-            }
+            // try {
 
-            if(quote_token === 'So11111111111111111111111111111111111111112' && WSOLFlag === false) {
+            //     console.log("Seeing if WSOL ATA exists.");
 
-                console.log(WSOLFlag, "Creating tx to create the ATA");
-
-                const wsolTx = new Transaction();
-
-                wsolTx.add(
-
-                    createAssociatedTokenAccountInstruction(payer, wsolATA, payer, new PublicKey(quote_token))
-                );
-
-                try {
+            //     wsolAccount = await getAccount({
                     
-                    await sendAndConfirmTransaction(connection, wsolTx, [senderKeypair]);
+            //         connection: connection,
+                    
+            //         address: wsolATA
+                
+            //     });
 
-                } catch(e) {
+            //     WSOLFlag = true;
 
-                    bot.sendMessage(Number(chat_id), `Transaction failed: ${e.message || e}`);
+            //     console.log("WSOL ATA exists!");
+            
+            // } catch(err) {
 
-                    continue;
-                }
+            //     console.log("Error in getAccount function call.");
+            // }
 
-                console.log("WSOL ATA created for the user.");
-            }
+            // if(quote_token === 'So11111111111111111111111111111111111111112' && WSOLFlag === false) {
+
+            //     console.log(WSOLFlag, "Creating tx to create the ATA");
+
+            //     const wsolTx = new Transaction();
+
+            //     wsolTx.add(
+
+            //         createAssociatedTokenAccountInstruction(payer, wsolATA, payer, new PublicKey(quote_token))
+            //     );
+
+            //     try {
+                    
+            //         await sendAndConfirmTransaction(connection, wsolTx, [senderKeypair]);
+
+            //     } catch(e) {
+
+            //         console.log(e);
+
+            //         bot.sendMessage(Number(chat_id), `Transaction failed: ${e.message || e}`);
+
+            //         continue;
+            //     }
+
+            //     console.log("WSOL ATA created for the user.");
+            // }
 
             const initTx = new Transaction();
 
@@ -357,11 +378,21 @@ export const manageUserPositionsService = async () => {
 
             const binRange = [minBin, maxBin];
 
-            const liquidityDistribution = liquidity_distribution;
+            console.log(binRange);
 
-            const minBinIndex = activeBin + minBin;
+            const newShape = LiquidityShape.Spot;
 
-            const maxBinIndex = activeBin + maxBin;
+            const liquidityDistribution = createUniformDistribution({
+                
+                shape: newShape, 
+                
+                binRange: binRange}
+            
+            );
+
+            const minBinIndex = Number(last_active_bin) + minBin;
+
+            const maxBinIndex = Number(last_active_bin) + maxBin;
 
             console.log("minBinIndex: ", minBinIndex, "maxBinIndex: ", maxBinIndex);
 
@@ -469,9 +500,9 @@ export const manageUserPositionsService = async () => {
               
                 amountY: new BN(amountY),
               
-                binArrayLower,
+                binArrayLower: binArrayLower,
               
-                binArrayUpper,
+                binArrayUpper: binArrayUpper,
             
             });
         
@@ -499,7 +530,7 @@ export const manageUserPositionsService = async () => {
             
             console.log("Position liquidity shares:", posAcc.liquidityShares);
 
-            bot.sendMessage(Number(chat_id), `Liquidity added successfully to new position!\nTx: ${sig}\nYour Position PDA: ${positionPDA.toBase58()}.\nYour position NFT: ${positionNFT.publicKey.toBase58()}\n Please refer to this position PDA to add or remove liquidity from this position`);
+            bot.sendMessage(Number(chat_id), `A similar position has been opened and liquidity added successfully around the new active bin: ${activeBin}!\nTx: ${sig}\nYour Position PDA: ${positionPDA.toBase58()}.\nYour position NFT: ${positionNFT.publicKey.toBase58()}\n Please refer to this position PDA to add or remove liquidity from this position`);
 
         } else {
 
