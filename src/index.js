@@ -55,6 +55,14 @@ app.post('/webhook', async (req, res) => {
 
     }
 
+    if(userMessage === 'I lost all my money yesterday') {
+
+        await axios.post(BOT_URL, { chat_id: chatId, text: 'Skill issue' });
+
+        return res.sendStatus(200);
+
+    }
+
     const systemPrompt = process.env.SYSTEM_PROMPT.replace(/\\n/g, "\n");
 
     const finalPrompt = `###System: ${systemPrompt} ###User : ${userMessage}`;

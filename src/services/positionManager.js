@@ -7,7 +7,6 @@ import sss from "shamirs-secret-sharing";
 import { createAssociatedTokenAccountInstruction, getAssociatedTokenAddress, getAccount, getOrCreateAssociatedTokenAccount } from "@solana/spl-token";
 import BN from "bn.js";
 import axios from "axios";
-import { error } from "console";
 
 export const manageUserPositionsService = async () => {
 
